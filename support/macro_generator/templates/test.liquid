@@ -1,0 +1,11 @@
+import SwiftSyntaxMacros
+import SwiftSyntaxMacrosTestSupport
+import XCTest
+
+#if canImport(SurfMacroBody)
+import SurfMacroBody
+
+let testMacros: [String: Macro.Type] = ["{{macro_name}}": {{macro_type}}.self]
+#endif
+
+final class {{macro_type}}Tests: XCTestCase {}

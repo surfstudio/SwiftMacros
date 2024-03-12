@@ -1,9 +1,22 @@
-.DS_Store
-/.build
-/Packages
+# Xcode
 /*.xcodeproj
 xcuserdata/
 DerivedData/
+
+# Swift Package Manager
 .swiftpm/config/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+
+# Network configuration
 .netrc
+
+# OS X Finder stuff
+.DS_Store
+
+# Bundler
+.bundle/
+Gemfile.lock
+
+# Build artifacts
+/.build
+/Packages

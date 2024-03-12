@@ -5,58 +5,66 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "SwiftMacros",
+    name: "VSURF-Support",
     platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
     products: [
         .library(
-            name: "SwiftMacros",
-            targets: [
-                "Macros",
-                "SwiftMacrosCore"
-            ]
+            name: "SurfMacros",
+            targets: ["SurfMacros"]
         ),
+        .executable(
+            name: "SurfMacrosClient",
+            targets: ["SurfMacrosClient"]
+        ),
+        .library(
+            name: "SurfCore",
+            targets: ["SurfCore"]
+        )
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
     ],
     targets: [
 
-        // MARK: - Macros
+        // MARK: - SurfMacros
 
+        .executableTarget(
+            name: "SurfMacrosClient",
+            dependencies: ["SurfMacros"],
+            path: "Sources/SurfMacros/Client"
+        ),
         .target(
-            name: "Macros",
-            dependencies: [
-                "MacrosImplementation",
-                "SwiftMacrosCore"
-            ],
-            path: "Sources/Macros/Macros"
+            name: "SurfMacros",
+            dependencies: ["SurfMacroBody"],
+            path: "Sources/SurfMacros/Macros"
         ),
         .macro(
-            name: "MacrosImplementation",
+            name: "SurfMacroBody",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "SwiftMacrosCore",
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ],
-            path: "Sources/Macros/MacrosImplementation"
+            path: "Sources/SurfMacros/Implementation"
         ),
         .testTarget(
-            name: "MacrosTests",
+            name: "SurfMacrosTests",
             dependencies: [
-                "MacrosImplementation",
+                "SurfMacroBody",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-            ]
+            ],
+            path: "Tests/SurfMacros"
         ),
 
-        // MARK: - SwiftMacrosCore
+        // MARK: - SurfCore
 
         .target(
-            name: "SwiftMacrosCore",
+            name: "SurfCore",
             dependencies: []
         ),
         .testTarget(
-            name: "SwiftMacrosCoreTests",
-            dependencies: ["SwiftMacrosCore"]
+            name: "SurfCoreTests",
+            dependencies: ["SurfCore"],
+            path: "Tests/SurfCore"
         ),
     ]
 )

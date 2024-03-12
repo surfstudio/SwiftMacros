@@ -3,7 +3,6 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-@main
-struct MacrosPlugin: CompilerPlugin {
-    let providingMacros: [Macro.Type] = []
+struct {{macro_group}}Plugin {
+    static let providingMacros: [Macro.Type] = []
 }
