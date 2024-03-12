@@ -1,20 +1,23 @@
 require 'liquid'
 require 'fileutils'
 
+# Function to convert name.liquid template with input data into string 
 def template(name, data)
   template_string = File.read("support/macro_generator/templates/#{name}.liquid")
   template = Liquid::Template.parse(template_string)
   template.render(data)
 end
 
+# Extract input arguments
 if ARGV.length < 1
-  puts ""
+  puts "Error: no arguments specified."
   exit
 end
 macro_name = (ARGV[0]).capitalize
 macro_group = (ARGV.length > 1 ? ARGV[1] : ARGV[0]).capitalize
 macro_type = "#{macro_name.capitalize}Macro"
 
+# Configure specs for every module
 macros_dir = "Sources/SurfMacros/Macros"
 macros_name = "#{macro_name}.swift"
 macros_content = ""
@@ -38,10 +41,13 @@ specs = [
   [tests_dir, test_name, test_content]
 ]
 
+# Create files and dirs
 specs.each do |dir, name, content|
   group_dir = "#{dir}/#{macro_group}"
   file_path = "#{group_dir}/#{name}"
 
+  # If a file for the macro exists
+  # Skip it without rewriting
   unless File.exist?(file_path)
     FileUtils.mkdir_p(group_dir)
     File.write(file_path, content)
