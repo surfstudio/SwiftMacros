@@ -4,5 +4,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
 struct {{macro_group}}Plugin {
-    static let providingMacros: [Macro.Type] = []
+    static let providingMacros: [Macro.Type] = [
+        {{ macro_types }}
+    ]
 }

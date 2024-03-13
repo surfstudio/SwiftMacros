@@ -6,6 +6,6 @@ import SwiftSyntaxMacros
 @main
 struct MacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        
+        {{ group_plugins }}
     ].flatMap { $0 }
 }
