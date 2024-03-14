@@ -14,13 +14,16 @@ macro_name = (ARGV[0]).capitalize
 macro_type = "#{macro_name}Macro"
 macro_group = (ARGV.length > 1 ? ARGV[1] : ARGV[0]).capitalize
 
+# Go to SurfMacros
+Dir.chdir("Sources/SurfMacros")
+
 # Create files and dirs
 create_modules_specs(macro_name, macro_type, macro_group).each do |specs|
   create_files_and_dirs(specs, macro_group)
 end
 
 # Update MacrosPlugin.swift
-implementation_dir = "Sources/SurfMacros/Implementation"
+implementation_dir = "Implementation"
 plugin_main_dir = "#{implementation_dir}/MacrosPlugin.swift"
 File.write(
   plugin_main_dir,

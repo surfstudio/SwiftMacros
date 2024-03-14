@@ -15,31 +15,39 @@ end
 
 # Return all macro types in the dir as a string
 def all_macro_types_in_dir(dir)
-  transformed_list_matching_entries(
+  transformed_list_selected_entries(
     dir,
-    "^[a-zA-Z]+Macro\.swift$",
-    lambda { |entry| entry.sub("swift", "self") }
+    lambda { |entry| 
+      entry.match?("^[a-zA-Z]+Macro\.swift$")
+    }, lambda { |entry|
+      entry.sub("swift", "self") 
+    }
   )
 end
 
-# Returns all macros plugins of the groups of the dir as a string
+# Return all macros plugins of the groups of the dir as a string
 def all_macros_plugins_in_dir(dir)
-  transformed_list_matching_entries(
+  transformed_list_selected_entries(
     dir,
-    "^[a-zA-Z]+$",
-    lambda { |entry| entry.concat("Plugin.providingMacros") }
+    lambda { |entry|
+      entry.match?("^[a-zA-Z]+$") && is_macro_group_dir(entry)
+    }, lambda { |entry|
+      entry.concat("Plugin.providingMacros")
+    }
   ) 
 end
 
 # String of entries that match regex in the directory
-def transformed_list_matching_entries(dir, regex, transformation)
+def transformed_list_selected_entries(dir, selector, transformation)
   indent = ' ' * 8
-  list_matching_entries(dir, regex)
-    .map { |entry| transformation.call(entry) }
+  Dir.entries(dir)
+    .select(&selector)
+    .map(&transformation) 
     .join(",\n#{indent}")
 end
 
-# List of entries that match regex in the directory
-def list_matching_entries(dir, regex)
-  Dir.entries(dir).select { |entry| entry.match?(regex) }
+# Determines whether the directory contains the file
+def is_macro_group_dir(dir)
+  plugin_file_path = File.join("Implementation/#{dir}", "#{dir}Plugin.swift")
+  File.exist?(plugin_file_path)
 end

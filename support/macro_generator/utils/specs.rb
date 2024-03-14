@@ -13,11 +13,11 @@ end
 
 # Create list of specs for every module
 def create_modules_specs(macro_name, macro_type, macro_group)
-  implementation_dir = "Sources/SurfMacros/Implementation"
+  implementation_dir = "Implementation"
   [
     # Macros
     Specs.new(
-      "Sources/SurfMacros/Macros",
+      "Macros",
       "#{macro_name}.swift",
       lambda { template("macros", { 'macro_name' => macro_name.downcase, 'macro_type' => macro_type }) }
     ),
@@ -47,7 +47,7 @@ def create_modules_specs(macro_name, macro_type, macro_group)
 
     # Test
     Specs.new(
-      "Tests/SurfMacros",
+      "../../Tests/SurfMacros",
       "#{macro_name}Tests.swift",
       lambda { template("test", { 'macro_name' => macro_name.downcase, 'macro_type' => macro_type }) }
     )
