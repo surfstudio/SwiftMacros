@@ -1,5 +1,6 @@
 import Foundation
 
+/// Обертка для слабой ссылки на объект.
 public struct Weak<Unit: AnyObject> {
 
     private(set) weak var unit: Unit?
