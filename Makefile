@@ -1,18 +1,31 @@
 ## VSURF-Support
 
-## Команда для инициализации проекта, выполняйте всегда перед первым стартом!
-init:
-	# Установить bundler, если еще не установлен
+init: ## Команда для инициализации проекта, выполняйте всегда перед первым стартом!
+	$(MAKE) install.gems
+	$(MAKE) install.brews
+	$(MAKE) install.hooks
+
+install.gems: ## Установит Bundler и гемы
 	if ! gem spec bundler > /dev/null 2>&1; then\
-  	echo "bundler gem is not installed!";\
-  	sudo gem install bundler -v "2.1.4";\
+		echo "bundler gem is not installed!";\
+		sudo gem install bundler -v "2.4.13";\
 	fi
-	bundle update
-	bundle config set --local path '.bundle'
+	bundle config set path '.bundle'
 	bundle install
 
+install.brews: ## Установит утилиты
+	brew bundle --no-upgrade
 
+install.hooks: ## Установит хуки
+	mkdir -p .git/hooks
+	$(MAKE) install.hook name=pre-commit
+	$(MAKE) install.hook name=prepare-commit-msg
+	$(MAKE) install.hook name=commit-msg
 
+install.hook: ## Установит конкретный хук
+              ## Пример: `make install.hook name=pre-commit`
+	chmod +x support/hooks/$(name)
+	ln -s -f ../../support/hooks/$(name) .git/hooks/$(name)
 
 ## Генерирует файлы для макроса с указанным именем. Параметры: name=<macroName> [group=<macroGroup>]
 macro:

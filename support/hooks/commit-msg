@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# Apply Hookfile
+source Hookfile
+
+# Validate config values
+if ! source support/validate_hookfile.sh; then
+  exit 1
+fi
+
+# Get the current branch name
+BRANCH_NAME="$(git symbolic-ref --short HEAD)"
+
+# Exist if the current branch is in the white list
+for i in "${BRANCHES_TO_SKIP[@]}"; do
+  if [ "$i" == "$BRANCH_NAME" ]; then
+    exit 0
+  fi
+done
+
+# regex to validate task identifier in commit msg. The same regex is used in `prepare-commit-msg`
+commit_regex="($PROJECT_ID-[0-9]{1,}\s.+|$WHITELIST_COMMIT_MSG)"
+error_msg="Aborting commit. Your commit message is missing either a Jira Issue ('$PROJECT_ID-N') or special prefix ('$WHITELIST_COMMIT_MSG')."
+
+if ! grep -iqE "$commit_regex" "$1"; then
+    echo "$error_msg" >&2
+    exit 1
+fi
