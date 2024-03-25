@@ -1,0 +1,10 @@
+// Define your macro based on one of the following templates
+
+// for freestanding macros like #Macro()
+// @freestanding(expression)
+// public macro {{ macro_name }}<T>(_ value: T) -> (T, String) = #externalMacro(module: "SurfMacroBody", type: "{{ macro_type }}")
+
+// for attached macros like @Macro attached to a struct or a class
+// @attached(member, names: named(set))
+// public macro {{ macro_name }}() = #externalMacro(module: "SurfMacroBody", type: "{{ macro_type }}")
+// keep in mind that you can combine several attached macro subtypes in a single macro
