@@ -4,7 +4,7 @@ import Foundation
 
 /// Слабая ссылка на любой протокол.
 ///  - Note: Значение get-only. ProjectedValue ($) отсутствует.
-///  - Warning: Если объект по какой-то причине обнулился, то в `Debug` сборке будет крашt.
+///  - Warning: Если объект по какой-то причине обнулился, то в `Debug` сборке будет краш.
 @propertyWrapper
 public struct WeakReference<Input: AnyObject> {
 
