@@ -1,5 +1,10 @@
 ## VSURF-Support
 
+## Initialization
+##
+## Блок команд, которые необходимо запускать при старте работы с проектом
+##
+
 init: ## Команда для инициализации проекта, выполняйте всегда перед первым стартом!
 	$(MAKE) install.gems
 	$(MAKE) install.brews
@@ -27,33 +32,31 @@ install.hook: ## Установит конкретный хук
 	chmod +x support/hooks/$(name)
 	ln -s -f ../../support/hooks/$(name) .git/hooks/$(name)
 
-## Генерирует файлы для макроса с указанным именем. Параметры: name=<macroName> [group=<macroGroup>]
-macro:
+
+macro: ## Генерирует файлы для макроса с указанным именем. Параметры: name=<macroName> [group=<macroGroup>]
 	@bundle exec ruby support/macro_generator/generator.rb $(name) $(group)
 
 
 
 
-# Цвета
+AWK := awk
+help: ## Показывает все возможные команды в данном MakeFile-е
+	@printf "\nUsage: make <command>\n\n"
+	@grep -F -h "##" $(MAKEFILE_LIST) | grep -F -v grep -F | sed -e 's/\\$$//' | $(AWK) 'BEGIN {FS = ":*[[:space:]]*##[[:space:]]*"}; \
+	{ \
+		if($$2 == "") \
+			printf "\n"; \
+		else if($$0 ~ /^#/) \
+			printf "\033[36m%s", $$2; \
+		else if($$1 == "") \
+			printf "     %-20s%s\n", "", $$2; \
+		else \
+			printf "    \033[32m%-20s\033[0m %s\n", $$1, $$2; \
+	}'
+
+
+# COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 WHITE  := $(shell tput -Txterm setaf 7)
 RESET  := $(shell tput -Txterm sgr0)
-
-TARGET_MAX_CHAR_NUM=20
-## Показывает все возможные команды в данном MakeFile-е
-help:
-	@echo ''
-	@echo 'Usage:'
-	@echo '  ${YELLOW}make${RESET} ${GREEN}<target>${RESET}'
-	@echo ''
-	@echo 'Targets:'
-	@awk '/^[a-zA-Z\-\_0-9]+:/ { \
-		helpMessage = match(lastLine, /^## (.*)/); \
-		if (helpMessage) { \
-			helpCommand = substr($$1, 0, index($$1, ":")-1); \
-			helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
-			printf "  ${YELLOW}%-$(TARGET_MAX_CHAR_NUM)s${RESET} ${GREEN}%s${RESET}\n", helpCommand, helpMessage; \
-		} \
-	} \
-	{ lastLine = $$0 }' $(MAKEFILE_LIST)
