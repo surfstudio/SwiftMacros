@@ -16,7 +16,12 @@
 ```plaintext
 VSURF-Support/
 ├── Sources/
+│   ├── SurfCore/
+│   │   └── SomeUtil/
+│   │       └── SomeUtil.swift
 │   └── SurfMacros/
+│         Client/
+│           └── main.swift
 │       ├── Macros/
 │       │   ├── Components/
 │       │   │   └── Router.swift
@@ -37,6 +42,8 @@ VSURF-Support/
         └── Utils/
             └── PreviewsMacroTests.swift
 ```
+- `SurfCore/` - директория для утилит, не являющимися макросами, однако состовляющими ядро архитектуры VSURF.
+- `Client/` - директория для comand-line таргета. На нем удобно проверять работу макросов еще до его использования в проекте. Своего рода Playground.
 - `Macros/` - директория, содержащая файлы-объявления макросов
 - `Файл объявления макроса` (`Router.swift`, `Previews.swift`) - содержит заголовок макроса
 - `Implementation/` - директория,. содержащая файлы-реализации макросов

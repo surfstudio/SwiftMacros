@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Apply Hookfile
+source Hookfile
+
+# Validate config values
+if ! source support/validate_hookfile.sh 2>&1; then
+  echo "The commit message has not been prepared due to unconfigured Hookfile." >&2
+  exit 1
+fi
+
+# Check correctness of the current message
+# If it is already correct, no need to edit it
+if .git/hooks/commit-msg $1 > /dev/null 2>&1; then
+  exit 0
+fi
+
+# Define the issue key
+BRANCH_NAME="$(git symbolic-ref --short HEAD)"
+ISSUE_KEY_REGEX="(${PROJECT_ID}-[0-9]{1,})"
+ISSUE_KEY=$(echo $BRANCH_NAME | grep -ioE $ISSUE_KEY_REGEX)
+
+# Amend the issue key at the beggining of the message
+if [ -n "$ISSUE_KEY" ]; then
+  sed -i.bak -e "1s/^/$ISSUE_KEY /" $1
+fi

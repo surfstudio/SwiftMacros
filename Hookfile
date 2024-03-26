@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Set your JIRA Project ID
+PROJECT_ID="SPT"
+
+# List branches for which the commit message format will be ignored
+BRANCHES_TO_SKIP=(main ci)
+
+# List allowed commit message prefixes
+WHITELIST_COMMIT_MSG="Merge.*|Version Bump.*|#Tech.*"
