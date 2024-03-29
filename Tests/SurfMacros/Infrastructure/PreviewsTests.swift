@@ -24,7 +24,7 @@ final class PreviewsMacroTests: XCTestCase {
             }
             """,
             expandedSource: """
-            fileprivate struct Content_Previews: PreviewProvider {
+            struct __macro_local_4ViewfMu_: PreviewProvider {
                 static var previews: some View {
                     Group {
                         SomeView(state: .constant(.init(state1)))
@@ -53,7 +53,7 @@ final class PreviewsMacroTests: XCTestCase {
             })
             """,
             expandedSource: """
-            fileprivate struct Content_Previews: PreviewProvider {
+            struct __macro_local_4ViewfMu_: PreviewProvider {
                 static var previews: some View {
                     ForEach(AppRootPoint.allCases) { rootPoint in
                         ContentView(state: .constant(.init(rootPoint: rootPoint)))
@@ -77,7 +77,7 @@ final class PreviewsMacroTests: XCTestCase {
             }
             """,
             expandedSource: """
-            fileprivate struct Content_Previews: PreviewProvider {
+            struct __macro_local_4ViewfMu_: PreviewProvider {
                 static var previews: some View {
                     SomeView(state: .constant(.init(state)))
                         .previewLayout(.sizeThatFits)
@@ -85,6 +85,47 @@ final class PreviewsMacroTests: XCTestCase {
                 }
             }
             """,
+            macros: testMacros
+       )
+    }
+
+    func testMacrosWhenNoTrailingClosure() {
+         assertMacroExpansion(
+            """
+            #Previews
+            """,
+            expandedSource: """
+            #Previews
+            """,
+            diagnostics: [DiagnosticSpec(message: "emptyArgumentsList", line: 1, column: 1)],
+            macros: testMacros
+       )       
+    }
+
+    func testMacrosWhenNoArgumentClosure() {
+         assertMacroExpansion(
+            """
+            #Previews()
+            """,
+            expandedSource: """
+            #Previews()
+            """,
+            diagnostics: [DiagnosticSpec(message: "emptyArgumentsList", line: 1, column: 1)],
+            macros: testMacros
+       )
+    }
+
+    func testMacrosWhenProvidedNonClosureTypeAsArgument() {
+         assertMacroExpansion(
+            """
+            #Previews(1)
+            """,
+            expandedSource: """
+            #Previews(1)
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "failedCastTo(type: SwiftSyntax.ClosureExprSyntax)", line: 1, column: 1)
+            ],
             macros: testMacros
        )
     }
