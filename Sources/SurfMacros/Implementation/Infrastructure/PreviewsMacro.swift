@@ -10,7 +10,7 @@ public struct PreviewsMacro: DeclarationMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let inputClosureBody = try getInputClosure(from: node).statements
-        let previewsVariable = createPreviewsVariable(body: inputClosureBody)
+        let previewsVariable = createPreviewsVariable(getterBody: inputClosureBody)
         let structName = context.makeUniqueName("View")
         let previewsStruct = createPreviewsStruct(name: structName, previewsVariable: previewsVariable)
         return [DeclSyntax(previewsStruct)]
@@ -31,7 +31,7 @@ public struct PreviewsMacro: DeclarationMacro {
         return closure
     }
 
-    private static func createPreviewsVariable(body: CodeBlockItemListSyntax) -> VariableDeclSyntax {
+    private static func createPreviewsVariable(getterBody: CodeBlockItemListSyntax) -> VariableDeclSyntax {
         let type = SomeOrAnyTypeSyntax(
             someOrAnySpecifier: .keyword(.some),
             constraint: IdentifierTypeSyntax(name: .identifier("View"))
@@ -39,7 +39,7 @@ public struct PreviewsMacro: DeclarationMacro {
         let patternBinding = PatternBindingSyntax(
             pattern: IdentifierPatternSyntax(identifier: "previews"),
             typeAnnotation: .init(type: type),
-            accessorBlock: .init(accessors: .getter(body))
+            accessorBlock: .init(accessors: .getter(getterBody))
         )
         let staticModifier = DeclModifierSyntax(name: .init(.keyword(.static)))
         return .init(
