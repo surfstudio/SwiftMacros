@@ -5,4 +5,6 @@ public enum MacroError: Error {
 
     case missedGenericArgumentClause
     case emptyGenericArgumentList
+
+    case custom(_ description: String)
 }

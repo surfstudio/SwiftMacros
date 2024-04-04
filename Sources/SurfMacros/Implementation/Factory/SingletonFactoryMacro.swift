@@ -22,6 +22,46 @@ public struct SingletonFactoryMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
+        try checkDeclOfProductProduceMethod(in: declaration)
+        return try createProductDecls(node: node, for: declaration)
+    }
+}
+
+// MARK: - Private Methods
+
+private extension SingletonFactoryMacro {
+
+    static func checkDeclOfProductProduceMethod(in declaration: DeclGroupSyntax) throws {
+        let privateModifier = DeclModifierSyntax(name: .keyword(.private))
+        if
+            let produceProductMethod = getProduceProductMethod(from: declaration),
+            !produceProductMethod.modifiers.contains(where: { $0.name.text == privateModifier.name.text }) {
+            throw MacroError.custom("produceProduct method should be private")
+        }
+    }
+
+    static func getProduceProductMethod(from declaration: DeclGroupSyntax) -> FunctionDeclSyntax? {
+        let expectedModifiersWithPrivate = DeclModifierListSyntax([
+            DeclModifierSyntax(name: .keyword(.private)),
+            DeclModifierSyntax(name: .keyword(.static))
+        ])
+        let expectedModifiers = DeclModifierListSyntax([DeclModifierSyntax(name: .keyword(.static))])
+        let expectedReturnType = IdentifierTypeSyntax(name: .identifier(Names.typealias))
+        let expectedSignature = FunctionSignatureSyntax(returnClause: ReturnClauseSyntax(type: expectedReturnType))
+        let expectedName = TokenSyntax(.identifier(Names.privateMethod))
+
+        return declaration.memberBlock.functionDecls.filter {
+            (Comparator.compare($0.modifiers, expectedModifiersWithPrivate) ||
+             Comparator.compare($0.modifiers, expectedModifiers)) &&
+            Comparator.compare($0.signature, expectedSignature) &&
+            Comparator.compare($0.name, expectedName)
+        }.first
+    }
+
+    static func createProductDecls(
+        node: AttributeSyntax,
+        for declaration: DeclGroupSyntax
+    ) throws -> [DeclSyntax] {
         let attributeGenericType = try getGenericType(of: node)
         let productTypeAlias = createProductTypeAlias(for: attributeGenericType)
         let productVariable = createProductVariable()
@@ -32,11 +72,7 @@ public struct SingletonFactoryMacro: MemberMacro {
             DeclSyntax(produceMethod)
         ]
     }
-}
 
-// MARK: - Private Methods
-
-private extension SingletonFactoryMacro {
     static func getGenericType(of attribute: AttributeSyntax) throws -> TypeSyntaxProtocol {
         guard let identifier = attribute.attributeName.as(IdentifierTypeSyntax.self) else {
             throw SyntaxError.failedCastTo(type: IdentifierTypeSyntax.self)

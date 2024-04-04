@@ -14,10 +14,16 @@ final class SingletonFactoryMacroTests: XCTestCase {
             """
             @SingletonFactory<Int>
             struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
             }
             """,
             expandedSource: """
             struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
 
                 typealias Product = Int
 
@@ -43,10 +49,16 @@ final class SingletonFactoryMacroTests: XCTestCase {
             """
             @SingletonFactory<Encodable & Decodable & Codable>
             struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
             }
             """,
             expandedSource: """
             struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
 
                 typealias Product = Encodable & Decodable & Codable
 
@@ -71,12 +83,44 @@ final class SingletonFactoryMacroTests: XCTestCase {
          assertMacroExpansion(
             """
             @SingletonFactory
-            struct Factory {}
+            struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
+            }
             """,
             expandedSource: """
-            struct Factory {}
+            struct Factory {
+                private static func produceProduct() -> Product {
+                    return 3
+                }
+            }
             """,
             diagnostics: [DiagnosticSpec(message: "missedGenericArgumentClause", line: 1, column: 1)],
+            macros: testMacros
+       )
+    }
+
+    func testMacrosWhenNotPrivateProduceProductMethod() {
+         assertMacroExpansion(
+            """
+            @SingletonFactory
+            struct Factory {
+                static func produceProduct() -> Product {
+                    return 3
+                }
+            }
+            """,
+            expandedSource: """
+            struct Factory {
+                static func produceProduct() -> Product {
+                    return 3
+                }
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "custom(\"produceProduct method should be private\")", line: 1, column: 1)
+            ],
             macros: testMacros
        )
     }
