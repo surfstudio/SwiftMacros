@@ -5,7 +5,7 @@ import XCTest
 #if canImport(SurfMacroBody)
 import SurfMacroBody
 
-let testMacros: [String: Macro.Type] = ["Previews": PreviewsMacro.self]
+private let testMacros: [String: Macro.Type] = ["Previews": PreviewsMacro.self]
 #endif
 
 final class PreviewsMacroTests: XCTestCase {
@@ -99,7 +99,7 @@ final class PreviewsMacroTests: XCTestCase {
             """,
             diagnostics: [DiagnosticSpec(message: "emptyArgumentsList", line: 1, column: 1)],
             macros: testMacros
-       )       
+       )
     }
 
     func testMacrosWhenNoArgumentClosure() {
