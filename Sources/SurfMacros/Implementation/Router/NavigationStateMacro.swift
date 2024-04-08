@@ -99,6 +99,7 @@ private extension  NavigationStateMacro {
         let initMemberAccessExpr = createInitMemberAccessExpr()
         let labeledExpr = LabeledExprSyntax(
             label: .identifier(Names.Navigation.variable),
+            colon: .colonToken(),
             expression: FunctionCallExprSyntax(calledExpression: initMemberAccessExpr)
         )
         let functionCallExpr = FunctionCallExprSyntax(
