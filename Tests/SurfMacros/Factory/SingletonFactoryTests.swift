@@ -104,7 +104,7 @@ final class SingletonFactoryMacroTests: XCTestCase {
     func testMacrosWhenNotPrivateProduceProductMethod() {
          assertMacroExpansion(
             """
-            @SingletonFactory
+            @SingletonFactory<Int>
             struct Factory {
                 static func produceProduct() -> Product {
                     return 3
@@ -119,7 +119,7 @@ final class SingletonFactoryMacroTests: XCTestCase {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "custom(\"produceProduct method should be private\")", line: 1, column: 1)
+                DiagnosticSpec(message: "error(\"produceProduct func should be private\")", line: 1, column: 1)
             ],
             macros: testMacros
        )

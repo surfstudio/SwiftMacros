@@ -10,9 +10,9 @@ if ARGV.length < 1
   puts "Error: no arguments specified."
   exit
 end
-macro_name = (ARGV[0]).capitalize
+macro_name = (ARGV[0])
 macro_type = "#{macro_name}Macro"
-macro_group = (ARGV.length > 1 ? ARGV[1] : ARGV[0]).capitalize
+macro_group = (ARGV.length > 1 ? ARGV[1] : ARGV[0])
 
 # Go to SurfMacros
 Dir.chdir("Sources/SurfMacros")

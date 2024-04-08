@@ -11,8 +11,8 @@ public struct SingletonFactoryMacro: MemberMacro {
     private enum Names {
         static let `typealias` = "Product"
         static let variable = "product"
-        static let method = "produce"
-        static let privateMethod = "produceProduct"
+        static let `func` = "produce"
+        static let privateFunc = "produceProduct"
     }
 
     // MARK: - Macro
@@ -22,40 +22,46 @@ public struct SingletonFactoryMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        try checkDeclOfProductProduceMethod(in: declaration)
+        try checkDeclOfProductProduceFunc(in: declaration)
         return try createProductDecls(node: node, for: declaration)
     }
+
 }
 
 // MARK: - Private Methods
 
 private extension SingletonFactoryMacro {
 
-    static func checkDeclOfProductProduceMethod(in declaration: DeclGroupSyntax) throws {
-        let privateModifier = DeclModifierSyntax(name: .keyword(.private))
-        if
-            let produceProductMethod = getProduceProductMethod(from: declaration),
-            !produceProductMethod.modifiers.contains(where: { $0.name.text == privateModifier.name.text }) {
-            throw MacroError.custom("produceProduct method should be private")
+    static func checkDeclOfProductProduceFunc(in declaration: DeclGroupSyntax) throws {
+        guard let produceProductFunc = getProduceProductFunc(from: declaration) else {
+            return
+        }
+        if !produceProductFunc.modifiers.contains(where: { $0.name.text == "private" }) {
+            throw MacroError.error("produceProduct func should be private")
         }
     }
 
-    static func getProduceProductMethod(from declaration: DeclGroupSyntax) -> FunctionDeclSyntax? {
-        let expectedModifiersWithPrivate = DeclModifierListSyntax([
-            DeclModifierSyntax(name: .keyword(.private)),
-            DeclModifierSyntax(name: .keyword(.static))
-        ])
-        let expectedModifiers = DeclModifierListSyntax([DeclModifierSyntax(name: .keyword(.static))])
-        let expectedReturnType = IdentifierTypeSyntax(name: .identifier(Names.typealias))
-        let expectedSignature = FunctionSignatureSyntax(returnClause: ReturnClauseSyntax(type: expectedReturnType))
-        let expectedName = TokenSyntax(.identifier(Names.privateMethod))
-
+    static func getProduceProductFunc(from declaration: DeclGroupSyntax) -> FunctionDeclSyntax? {
+        let expectedFunc = createExpectedProduceProductFunc(withPrivateModifier: false)
+        let expectedFuncWithPrivate = createExpectedProduceProductFunc(withPrivateModifier: true)
         return declaration.memberBlock.functionDecls.filter {
-            (Comparator.compare($0.modifiers, expectedModifiersWithPrivate) ||
-             Comparator.compare($0.modifiers, expectedModifiers)) &&
-            Comparator.compare($0.signature, expectedSignature) &&
-            Comparator.compare($0.name, expectedName)
+            compare($0, expectedFunc) || compare($0, expectedFuncWithPrivate)
         }.first
+    }
+
+    static func createExpectedProduceProductFunc(withPrivateModifier: Bool) -> FunctionDeclSyntax {
+        var modifiers = [DeclModifierSyntax(name: .keyword(.static))]
+        if withPrivateModifier {
+            modifiers.append(.init(name: .keyword(.private)))
+        }
+        let returnType = IdentifierTypeSyntax(name: .identifier(Names.typealias))
+        let signature = FunctionSignatureSyntax(returnClause: ReturnClauseSyntax(type: returnType))
+        let name = TokenSyntax(.identifier(Names.privateFunc))
+        return .init(
+            modifiers: DeclModifierListSyntax(modifiers),
+            name: name,
+            signature: signature
+        )
     }
 
     static func createProductDecls(
@@ -65,11 +71,11 @@ private extension SingletonFactoryMacro {
         let attributeGenericType = try getGenericType(of: node)
         let productTypeAlias = createProductTypeAlias(for: attributeGenericType)
         let productVariable = createProductVariable()
-        let produceMethod = createProduceMethod()
+        let produceFunc = createProduceFunc()
         return [
             DeclSyntax(productTypeAlias),
             DeclSyntax(productVariable),
-            DeclSyntax(produceMethod)
+            DeclSyntax(produceFunc)
         ]
     }
 
@@ -105,20 +111,20 @@ private extension SingletonFactoryMacro {
         )
     }
 
-    static func createProduceMethod() -> FunctionDeclSyntax {
+    static func createProduceFunc() -> FunctionDeclSyntax {
         let staticModifier = DeclModifierSyntax(name: .init(.keyword(.static)))
         let returnType = IdentifierTypeSyntax(name: .identifier(Names.typealias))
         let signature = FunctionSignatureSyntax(returnClause: ReturnClauseSyntax(type: returnType))
-        let body = createProduceMethodBody()
+        let body = createProduceFuncBody()
         return .init(
             modifiers: [staticModifier],
-            name: .identifier(Names.method),
+            name: .identifier(Names.func),
             signature: signature,
             body: body
         )
     }
 
-    static func createProduceMethodBody() -> CodeBlockSyntax {
+    static func createProduceFuncBody() -> CodeBlockSyntax {
         let ifElseExpr = createIfElseExpr()
         let statement = CodeBlockItemSyntax(item: .expr(ExprSyntax(ifElseExpr)))
         return .init(statements: [statement])
@@ -172,7 +178,7 @@ private extension SingletonFactoryMacro {
 
     static func createElseBodyProductVariable() -> VariableDeclSyntax {
         let produceProductFunctionCall = FunctionCallExprSyntax(
-            calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.privateMethod))
+            calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.privateFunc))
         )
         let binding = PatternBindingSyntax(
             pattern: IdentifierPatternSyntax(identifier: .identifier(Names.variable)),
@@ -189,4 +195,50 @@ private extension SingletonFactoryMacro {
         let rightOperand = DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
         return .init(leftOperand: leftOperand, operator: AssignmentExprSyntax(), rightOperand: rightOperand)
     }
+
+}
+
+// it would take much time to write the complete implementation of compare functions for each type
+// so, it's been decided to place compressions nedeed only for this macro here
+
+private func compare(_ lhs: FunctionDeclSyntax, _ rhs: FunctionDeclSyntax) -> Bool {
+    return compare(lhs.modifiers,rhs.modifiers) &&
+        compare(lhs.signature, rhs.signature) &&
+        compare(lhs.name, rhs.name)
+}
+
+private func compare(_ lhs: DeclModifierListSyntax, _ rhs: DeclModifierListSyntax) -> Bool {
+    return lhs.count == rhs.count && lhs.indices.map { compare(lhs[$0], rhs[$0]) }.filter { !$0 }.count == .zero
+}
+
+private func compare(_ lhs: DeclModifierSyntax, _ rhs: DeclModifierSyntax) -> Bool {
+    return compare(lhs.name, rhs.name)
+}
+
+private func compare(_ lhs: FunctionSignatureSyntax, _ rhs: FunctionSignatureSyntax) -> Bool {
+    guard
+        let lhsReturnClause = lhs.returnClause,
+        let rhsReturnClause = rhs.returnClause
+    else {
+        return false
+    }
+    return compare(lhsReturnClause, rhsReturnClause)
+}
+
+private func compare(_ lhs: ReturnClauseSyntax, _ rhs: ReturnClauseSyntax) -> Bool {
+    guard
+        let lhsIdentifier = lhs.type.as(IdentifierTypeSyntax.self),
+        let rhsIdentifier = rhs.type.as(IdentifierTypeSyntax.self)
+    else {
+        return false
+    }
+    return compare(lhsIdentifier, rhsIdentifier)
+}
+
+private func compare(_ lhs: IdentifierTypeSyntax, _ rhs: IdentifierTypeSyntax) -> Bool {
+    return compare(lhs.name, rhs.name)
+}
+
+private func compare(_ lhs: TokenSyntax, _ rhs: TokenSyntax) -> Bool {
+    return lhs.kind == rhs.kind && lhs.presence == rhs.presence
 }
