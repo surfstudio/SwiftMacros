@@ -36,8 +36,8 @@ private extension SingletonFactoryMacro {
         guard let produceProductFunc = getProduceProductFunc(from: declaration) else {
             return
         }
-        if !produceProductFunc.modifiers.contains(where: { $0.name.text == "private" }) {
-            throw MacroError.error("produceProduct func should be private")
+        guard produceProductFunc.modifiers.contains(where: { $0.name.text == "private" }) else {
+            throw DeclarationError.missedModifier(declName: Names.privateFunc, declType: .func, expected: .private)
         }
     }
 

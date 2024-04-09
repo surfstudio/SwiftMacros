@@ -9,6 +9,7 @@ public struct NavigationStateMacro: MemberMacro {
     // MARK: - Names
 
     private enum Names {
+
         enum Navigation {
             static let type = "NavigationPath"
             static let variable = "navigationPath"
@@ -18,13 +19,13 @@ public struct NavigationStateMacro: MemberMacro {
             static let variable = "initial"
         }
 
+        enum Destination {
+            static let type = "Destination"
+            static let argument = "destination"
+            static let hashable = "Hashable"
+        }
+
         enum Signals {
-
-            enum Destination {
-                static let type = "Destination"
-                static let argument = "destination"
-            }
-
             static let push = "push"
             static let pop = "pop"
             static let popToRoot = "popToRoot"
@@ -41,7 +42,7 @@ public struct NavigationStateMacro: MemberMacro {
         providingMembersOf declaration: some DeclGroupSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        try checkDeclarationType(declaration: declaration)
+        try checkDeclaration(declaration)
         return createNavigationStateMacroDecls()
     }
 }
@@ -50,9 +51,32 @@ public struct NavigationStateMacro: MemberMacro {
 
 private extension  NavigationStateMacro {
 
+    static func checkDeclaration(_ declaration: some DeclGroupSyntax) throws {
+        try checkDeclarationType(declaration: declaration)
+        try checkDestinationEnumConformsToHashable(declaration: declaration)
+    }
+
     static func checkDeclarationType(declaration: some DeclGroupSyntax) throws {
-        if declaration.as(StructDeclSyntax.self) == nil {
-            throw MacroError.error("Can be attached to structs only")
+        guard declaration.as(StructDeclSyntax.self) != nil else {
+            throw DeclarationError.wrongAttaching(expected: .struct)
+        }
+    }
+
+    static func checkDestinationEnumConformsToHashable(declaration: some DeclGroupSyntax) throws {
+        let missedInheritanceError = DeclarationError.missedInheritance(
+            declName: Names.Destination.type,
+            declType: .enum,
+            expected: Names.Destination.hashable
+        )
+        let enumDecls = declaration.memberBlock.enumDecls
+        guard let destinationEnum = enumDecls.first(where: { $0.name.text == Names.Destination.type }) else {
+            return
+        }
+        guard let inheritanceClause = destinationEnum.inheritanceClause else {
+            throw missedInheritanceError
+        }
+        guard inheritanceClause.inheritedTypes.contains(type: .identifier(Names.Destination.hashable)) else {
+            throw missedInheritanceError
         }
     }
 
@@ -115,13 +139,13 @@ private extension  NavigationStateMacro {
 
     static func createPushFunc() -> FunctionDeclSyntax {
         let destinationParameter = FunctionParameterSyntax(
-            firstName: .identifier(Names.Signals.Destination.argument),
-            type: IdentifierTypeSyntax(name: .identifier(Names.Signals.Destination.type))
+            firstName: .identifier(Names.Destination.argument),
+            type: IdentifierTypeSyntax(name: .identifier(Names.Destination.type))
         )
         let functionalCallExpr = createFunctionCallExpr(
             baseName: .identifier(Names.Navigation.variable),
             declName: .identifier(Names.Signals.append),
-            argumentName: .identifier(Names.Signals.Destination.argument)
+            argumentName: .identifier(Names.Destination.argument)
         )
         return createMutatingFunc(
             name: .identifier(Names.Signals.push),

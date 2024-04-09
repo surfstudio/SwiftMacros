@@ -119,7 +119,7 @@ final class SingletonFactoryMacroTests: XCTestCase {
             }
             """,
             diagnostics: [
-                DiagnosticSpec(message: "error(\"produceProduct func should be private\")", line: 1, column: 1)
+                DiagnosticSpec(message: "func produceProduct must be private", line: 1, column: 1)
             ],
             macros: testMacros
        )

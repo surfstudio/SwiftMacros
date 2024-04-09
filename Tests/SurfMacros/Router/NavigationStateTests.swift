@@ -69,7 +69,7 @@ final class NavigationStateMacroTests: XCTestCase {
             """
         }
         let diagnostic = DiagnosticSpec(
-            message: "error(\"Can be attached to structs only\")",
+            message: "Macro can be attached to struct only",
             line: 1,
             column: 1
         )
@@ -83,35 +83,60 @@ final class NavigationStateMacroTests: XCTestCase {
             )
         }
     }
+
+    func testWhenDestinationEnumDoesNotConformToAnything() {
+        assertMacroExpansion(
+            """
+            @NavigationState
+            struct MainState {
+                enum Destination {
+                    case final
+                }
+            }
+            """,
+            expandedSource: """
+            struct MainState {
+                enum Destination {
+                    case final
+                }
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "enum Destination must inherit from Hashable",
+                    line: 1,
+                    column: 1
+                )
+            ],
+            macros: testMacros
+       )
+    }
+
+    func testWhenDestinationEnumDoesNotConformToHashable() {
+        assertMacroExpansion(
+            """
+            @NavigationState
+            struct MainState {
+                enum Destination: Encodable, Decodable {
+                    case final
+                }
+            }
+            """,
+            expandedSource: """
+            struct MainState {
+                enum Destination: Encodable, Decodable {
+                    case final
+                }
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: "enum Destination must inherit from Hashable",
+                    line: 1,
+                    column: 1
+                )
+            ],
+            macros: testMacros
+       )
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
