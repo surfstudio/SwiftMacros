@@ -6,5 +6,6 @@
 /// - `popToRoot()` - reverts the path to the initial state
 /// - Warning: Can be attached to a struct only.
 /// - Warning: The macro requires implementation of a nested `Destination:` [`Hashable`](https://developer.apple.com/documentation/swift/hashable) enum.
+/// - Warning: Do not use it inside the [`Preview`](https://developer.apple.com/documentation/developertoolssupport/preview) macro.
 @attached(member, names: arbitrary)
 public macro NavigationState() = #externalMacro(module: "SurfMacroBody", type: "NavigationStateMacro")
