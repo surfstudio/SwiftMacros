@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Types: String, CustomStringConvertible {
+public enum Decls: String, CustomStringConvertible {
     case `protocol`
     case `class`
     case `struct`

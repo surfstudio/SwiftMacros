@@ -57,15 +57,15 @@ private extension  NavigationStateMacro {
     }
 
     static func checkDeclarationType(declaration: some DeclGroupSyntax) throws {
-        guard declaration.as(StructDeclSyntax.self) != nil else {
+        guard declaration.is(StructDeclSyntax.self) else {
             throw DeclarationError.wrongAttaching(expected: .struct)
         }
     }
 
     static func checkDestinationEnumConformsToHashable(declaration: some DeclGroupSyntax) throws {
         let missedInheritanceError = DeclarationError.missedInheritance(
+            decl: .enum,
             declName: Names.Destination.type,
-            declType: .enum,
             expected: Names.Destination.hashable
         )
         let enumDecls = declaration.memberBlock.enumDecls

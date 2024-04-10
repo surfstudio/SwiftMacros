@@ -4,6 +4,7 @@ import XCTest
 
 #if canImport(SurfMacroBody)
 import SurfMacroBody
+import SurfMacrosSupport
 
 private let testMacros: [String: Macro.Type] = ["NavigationState": NavigationStateMacro.self]
 #endif
@@ -73,13 +74,16 @@ final class NavigationStateMacroTests: XCTestCase {
             line: 1,
             column: 1
         )
+        let wrongDecls: [Decls] = [.class, .enum]
 
-        ["class", "enum"].forEach {
-            assertMacroExpansion(
-                attached($0),
-                expandedSource: expandedSource($0),
-                diagnostics: [diagnostic],
-                macros: testMacros
+        wrongDecls
+            .map { $0.rawValue }
+            .forEach {
+                assertMacroExpansion(
+                    attached($0),
+                    expandedSource: expandedSource($0),
+                    diagnostics: [diagnostic],
+                    macros: testMacros
             )
         }
     }

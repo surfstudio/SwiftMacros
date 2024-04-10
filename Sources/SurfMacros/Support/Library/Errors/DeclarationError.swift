@@ -2,18 +2,18 @@ import Foundation
 import SwiftSyntax
 
 public enum DeclarationError: Error, CustomStringConvertible {
-    case wrongAttaching(expected: Types)
-    case missedModifier(declName: String, declType: Types, expected: Modifiers)
-    case missedInheritance(declName: String, declType: Types, expected: String)
+    case wrongAttaching(expected: Decls)
+    case missedModifier(decl: Decls, declName: String, expected: Modifiers)
+    case missedInheritance(decl: Decls, declName: String, expected: String)
 
     public var description: String {
         switch self {
-        case .wrongAttaching(let expectedType):
-            return "Macro can be attached to \(expectedType) only"
-        case .missedModifier(let declName, let declType, let expectedModifier):
-            return "\(declType) \(declName) must be \(expectedModifier)"
-        case .missedInheritance(let declName, let declType, let expectedInheritance):
-            return "\(declType) \(declName) must inherit from \(expectedInheritance)"
+        case .wrongAttaching(let expectedDecl):
+            return "Macro can be attached to \(expectedDecl) only"
+        case .missedModifier(let decl, let declName, let expectedModifier):
+            return "\(decl) \(declName) must be \(expectedModifier)"
+        case .missedInheritance(let decl, let declName, let expectedInheritance):
+            return "\(decl) \(declName) must inherit from \(expectedInheritance)"
         }
     }
 }
