@@ -41,15 +41,25 @@ let package = Package(
         .macro(
             name: "SurfMacroBody",
             dependencies: [
+                "SurfMacrosSupport",
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
             ],
             path: "Sources/SurfMacros/Implementation"
         ),
+        .target(
+            name: "SurfMacrosSupport",
+            dependencies: [
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+            ],
+            path: "Sources/SurfMacros/Support"
+        ),
         .testTarget(
             name: "SurfMacrosTests",
             dependencies: [
                 "SurfMacroBody",
+                "SurfMacrosSupport",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ],
             path: "Tests/SurfMacros"
