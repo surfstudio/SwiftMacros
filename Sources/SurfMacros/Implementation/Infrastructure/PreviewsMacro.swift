@@ -5,17 +5,34 @@ import SwiftSyntaxMacros
 import SurfMacrosSupport
 
 public struct PreviewsMacro: DeclarationMacro {
+
+    // MARK: -  Names
+
+    private enum Names {
+        static let variable = "previews"
+        static let type = "View"
+        static let `protocol` = "PreviewProvider"
+    }
+
+    // MARK: - Macro
+    
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         let inputClosureBody = try getInputClosure(from: node).statements
         let previewsVariable = createPreviewsVariable(getterBody: inputClosureBody)
-        let structName = context.makeUniqueName("View")
+        let structName = context.makeUniqueName(Names.type)
         let previewsStruct = createPreviewsStruct(name: structName, previewsVariable: previewsVariable)
         return [DeclSyntax(previewsStruct)]
     }
 
+}
+
+// MARK: - Private Methods
+
+private extension PreviewsMacro {
+ 
     private static func getInputClosure(
         from node: some FreestandingMacroExpansionSyntax
     ) throws -> ClosureExprSyntax {
@@ -34,10 +51,10 @@ public struct PreviewsMacro: DeclarationMacro {
     private static func createPreviewsVariable(getterBody: CodeBlockItemListSyntax) -> VariableDeclSyntax {
         let type = SomeOrAnyTypeSyntax(
             someOrAnySpecifier: .keyword(.some),
-            constraint: IdentifierTypeSyntax(name: .identifier("View"))
+            constraint: IdentifierTypeSyntax(name: .identifier(Names.type))
         )
         let patternBinding = PatternBindingSyntax(
-            pattern: IdentifierPatternSyntax(identifier: "previews"),
+            pattern: IdentifierPatternSyntax(identifier: .identifier(Names.variable)),
             typeAnnotation: .init(type: type),
             accessorBlock: .init(accessors: .getter(getterBody))
         )
@@ -53,7 +70,7 @@ public struct PreviewsMacro: DeclarationMacro {
         name: TokenSyntax,
         previewsVariable: VariableDeclSyntax
     ) -> StructDeclSyntax {
-        let previewProviderProtocol = IdentifierTypeSyntax(name: .init(.identifier("PreviewProvider")))
+        let previewProviderProtocol = IdentifierTypeSyntax(name: .init(.identifier(Names.protocol)))
         let previewProviderConformance = InheritanceClauseSyntax(
             inheritedTypes: [InheritedTypeSyntax(type: previewProviderProtocol)]
         )
@@ -63,4 +80,5 @@ public struct PreviewsMacro: DeclarationMacro {
             memberBlock: MemberBlockSyntax(members: [MemberBlockItemSyntax(decl: previewsVariable)])
         )
     }
+
 }
