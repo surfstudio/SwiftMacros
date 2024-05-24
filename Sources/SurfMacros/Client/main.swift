@@ -14,6 +14,10 @@ private let defaultSignals: [BatSignal] = []
 
 // Helpers
 
+public func BatSignals(@ArrayBuilder<BatSignal> _ signals: () -> [BatSignal]) -> BatSignal {
+    return MulticastBatSignal(signals: defaultSignals + signals())
+}
+
 struct TestStruct: BatSignal {
     func robin() {}
 }
