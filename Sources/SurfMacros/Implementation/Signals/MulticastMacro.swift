@@ -20,6 +20,9 @@ public struct MulticastMacro: PeerMacro {
         static var `protocol` = ""
 
         static var `class`: String {
+            return "Multicast" + `protocol`
+        }
+        static var `func`: String {
             return `protocol` + "s"
         }
 
@@ -38,8 +41,9 @@ public struct MulticastMacro: PeerMacro {
         try checkProtocolDeclaration(protocolDecl)
         Names.protocol = protocolDecl.name.text
         let protocolFuncDecls = protocolDecl.memberBlock.functionDecls
-        let signalsClass = createSignalsClass(with: protocolFuncDecls)
-        return [.init(signalsClass)]
+        let multicastSignalsClass = createMulticastSignalsClass(with: protocolFuncDecls)
+        let signalsFunc = createSignalsFunc()
+        return [.init(multicastSignalsClass), .init(signalsFunc)]
     }
 
 }
@@ -58,16 +62,28 @@ private extension MulticastMacro {
 
 private extension MulticastMacro {
 
-    static func createSignalsClass(with protocolFuncDecls: [FunctionDeclSyntax]) -> ClassDeclSyntax {
-        let publicModifier = createPublicModifier()
+    static func createMulticastSignalsClass(with protocolFuncDecls: [FunctionDeclSyntax]) -> ClassDeclSyntax {
+        let privateModifier = DeclModifierSyntax(name: .keyword(.private))
         let finalModifier = DeclModifierSyntax(name: .keyword(.final))
         let signalProtocolIdentifier = createProtocolIdentifier()
-        let memberBlock = createSignalsClassMemberBlock(with: protocolFuncDecls)
+        let memberBlock = createMulticastSignalsClassMemberBlock(with: protocolFuncDecls)
         return .init(
-            modifiers: [publicModifier, finalModifier],
+            modifiers: [privateModifier, finalModifier],
             name: .identifier(Names.class),
             inheritanceClause: .init(inheritedTypes: [.init(type: signalProtocolIdentifier)]),
             memberBlock: memberBlock
+        )
+    }
+
+    static func createSignalsFunc() -> FunctionDeclSyntax {
+        let publicModifier = createPublicModifier()
+        let signature = createSignalsFuncSignature()
+        let body = createSignalsFuncBody()
+        return .init(
+            modifiers: [publicModifier],
+            name: .identifier(Names.func),
+            signature: signature,
+            body: body
         )
     }
 
@@ -117,12 +133,14 @@ private extension MulticastMacro {
         return .init(name: .identifier(Names.protocol))
     }
 
-    static func createSignalsClassMemberBlock(with protocolFuncDecls: [FunctionDeclSyntax]) -> MemberBlockSyntax {
+    static func createMulticastSignalsClassMemberBlock(
+        with protocolFuncDecls: [FunctionDeclSyntax]
+    ) -> MemberBlockSyntax {
         let itemList = MemberBlockItemListSyntax {
             createSignalsVariable()
-            createSignalsClassInit()
+            createMulticastSignalsClassInit()
             for funcDecl in protocolFuncDecls {
-                transformIntoSignalsClassFuncDecl(funcDecl)
+                transformIntoMulticastSignalsClassFuncDecl(funcDecl)
             }
         }
         return .init(members: itemList)
@@ -135,14 +153,18 @@ private extension MulticastMacro {
             pattern: IdentifierPatternSyntax(identifier: .identifier(Names.variable)),
             typeAnnotation: .init(type: signalsArrayType)
         )
-        return .init(modifiers: [privateModifier], bindingSpecifier: .keyword(.let), bindings: [patternBinding])
+        return .init(
+            modifiers: [privateModifier],
+            bindingSpecifier: .keyword(.let),
+            bindings: [patternBinding]
+        )
     }
 
     static func createArrayOfSignalsType() -> ArrayTypeSyntax {
         return .init(element: createProtocolIdentifier())
     }
 
-    static func createSignalsClassInit() -> InitializerDeclSyntax {
+    static func createMulticastSignalsClassInit() -> InitializerDeclSyntax {
         let publicModifier = createPublicModifier()
         let signature = createSignalsClassInitSignature()
         let body = createSignalsClassInitBody()
@@ -150,24 +172,11 @@ private extension MulticastMacro {
     }
 
     static func createSignalsClassInitSignature() -> FunctionSignatureSyntax {
-        let attributeArgumentGenericType = createProtocolIdentifier()
-        let attributeName = IdentifierTypeSyntax(
-            name: .identifier(Names.arrayBuilder),
-            genericArgumentClause: .init(arguments: [.init(argument: attributeArgumentGenericType)])
-                
+        let signalsParameter = FunctionParameterSyntax(
+            firstName: .identifier(Names.variable),
+            type: createArrayOfSignalsType()
         )
-        let returnTypeOfInputFunction = createArrayOfSignalsType()
-        let inputFunctionType = FunctionTypeSyntax(
-            parameters: [],
-            returnClause: .init(type: returnTypeOfInputFunction)
-        )
-        let arrayBuilderParameter = FunctionParameterSyntax(
-            attributes: [.attribute(.init(attributeName: attributeName))],
-            firstName: .wildcardToken(),
-            secondName: .identifier(Names.variable),
-            type: inputFunctionType
-        )
-        return .init(parameterClause: .init(parameters: [arrayBuilderParameter]))
+        return .init(parameterClause: .init(parameters: [signalsParameter]))
     }
 
     static func createSignalsClassInitBody() -> CodeBlockSyntax {
@@ -175,22 +184,18 @@ private extension MulticastMacro {
             base: DeclReferenceExprSyntax(baseName: .keyword(.`self`)),
             declName: .init(baseName: .identifier(Names.variable))
         )
-        let rightOperand = InfixOperatorExprSyntax(
-            leftOperand: DeclReferenceExprSyntax(baseName: .identifier(Names.defaultSignals)),
-            operator: BinaryOperatorExprSyntax(operator: .binaryOperator(Names.plus)),
-            rightOperand: FunctionCallExprSyntax(
-                calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
-            )
-        )
-        let infixOperatorExpr = InfixOperatorExprSyntax(
+        let rightOperand = DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
+        let infixOperator = InfixOperatorExprSyntax(
             leftOperand: leftOperand,
             operator: AssignmentExprSyntax(),
             rightOperand: rightOperand
         )
-        return .init(statements: [.init(item: .expr(.init(infixOperatorExpr)))])
+        return .init(statements: [.init(item: .expr(.init(infixOperator)))])
     }
 
-    static func transformIntoSignalsClassFuncDecl(_ funcDecl: FunctionDeclSyntax) -> FunctionDeclSyntax {
+    static func transformIntoMulticastSignalsClassFuncDecl(
+        _ funcDecl: FunctionDeclSyntax
+    ) -> FunctionDeclSyntax {
         let funcCall = transformIntoCall(functionDecl: funcDecl)
         let trailingClosure = ClosureExprSyntax(statements: [.init(item: .expr(.init(funcCall)))])
         let forEachCall = FunctionCallExprSyntax(
@@ -223,6 +228,53 @@ private extension MulticastMacro {
             }
         }
         return .init(calledExpression: calledExpression, arguments: arguments)
+    }
+
+    static func createSignalsFuncSignature() -> FunctionSignatureSyntax {
+        let attributeArgumentGenericType = createProtocolIdentifier()
+        let attributeName = IdentifierTypeSyntax(
+            name: .identifier(Names.arrayBuilder),
+            genericArgumentClause: .init(arguments: [.init(argument: attributeArgumentGenericType)])
+                
+        )
+        let returnTypeOfInputFunction = createArrayOfSignalsType()
+        let inputFunctionType = FunctionTypeSyntax(
+            parameters: [],
+            returnClause: .init(type: returnTypeOfInputFunction)
+        )
+        let arrayBuilderParameter = FunctionParameterSyntax(
+            attributes: [.attribute(.init(attributeName: attributeName))],
+            firstName: .wildcardToken(),
+            secondName: .identifier(Names.variable),
+            type: inputFunctionType
+        )
+        let returnType = IdentifierTypeSyntax(name: .identifier(Names.protocol))
+        return .init(
+            parameterClause: .init(parameters: [arrayBuilderParameter]),
+            returnClause: .init(type: returnType)
+        )
+    }
+
+    static func createSignalsFuncBody() -> CodeBlockSyntax {
+        let defaultSignals = DeclReferenceExprSyntax(baseName: .identifier(Names.defaultSignals))
+        let inputSignals = FunctionCallExprSyntax(
+            calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
+        )
+        let infixOperator = InfixOperatorExprSyntax(
+            leftOperand: defaultSignals,
+            operator: BinaryOperatorExprSyntax(operator: .binaryOperator(Names.plus)),
+            rightOperand: inputSignals
+        )
+        let signalsArgument = LabeledExprSyntax(
+            label: .identifier(Names.variable),
+            expression: infixOperator
+        )
+        let returnExpr = FunctionCallExprSyntax(
+            calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.class)),
+            arguments: [signalsArgument]
+        )
+        let returnStmt = ReturnStmtSyntax(expression: returnExpr)
+        return .init(statements: [.init(item: .stmt(.init(returnStmt)))])
     }
 
 }
