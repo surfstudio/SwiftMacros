@@ -10,6 +10,10 @@ let input closure = getInputClosure(from: node)
 ```swift
 let router = createRouterVariable()
 ```
+- `check`, если функция проверяет контекст макроса (тип декларации, к которой прикрепили макрос, ее внутренние свойства и т.д.)
+```swift
+try checkAttachedType(declaration)
+```
 
 **Имена переменных**
 - при создании экземпляра `TokenSyntax` не стоит писать `Token` в названии переменной, лучше укажите, что будет хранить переменная.

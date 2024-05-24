@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDECodeSnippetCompletionPrefix</key>
+	<string>envacc</string>
+	<key>IDECodeSnippetCompletionScopes</key>
+	<array>
+		<string>TopLevel</string>
+	</array>
+	<key>IDECodeSnippetContents</key>
+	<string>public enum &lt;#Style#&gt;Key: EnvironmentKey {
+    
+    public static var defaultValue: any &lt;#Style#&gt; = &lt;#defaultValue#&gt;
+
+}
+
+public extension EnvironmentValues {
+
+    var &lt;#style#&gt;: any &lt;#Style#&gt; {
+        get { self[&lt;#Style#&gt;Key.self] }
+        set { self[&lt;#Style#&gt;Key.self] = newValue }
+    }
+
+}  
+
+public extension View {
+
+    func &lt;#style#&gt;(_ style: any &lt;#Style#&gt;) -&gt; some View {
+        self.environment(\.&lt;#style#&gt;, style)
+  }
+
+}
+</string>
+	<key>IDECodeSnippetIdentifier</key>
+	<string>4D299F53-806E-4E29-8B00-8A0DFA5E500D</string>
+	<key>IDECodeSnippetLanguage</key>
+	<string>Xcode.SourceCodeLanguage.Swift</string>
+	<key>IDECodeSnippetSummary</key>
+	<string>Содержит все необходимое для добавления Style в SwiftUI</string>
+	<key>IDECodeSnippetTitle</key>
+	<string>EnvironmentAccessible</string>
+	<key>IDECodeSnippetUserSnippet</key>
+	<true/>
+	<key>IDECodeSnippetVersion</key>
+	<integer>2</integer>
+</dict>
+</plist>
