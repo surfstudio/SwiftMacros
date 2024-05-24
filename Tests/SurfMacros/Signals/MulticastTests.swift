@@ -61,35 +61,42 @@ final class MulticastMacroTests: XCTestCase {
     }
     
     
-    // test when there is where generic
     
     func testWhenThereIsNoAppropriateFunc() {
         assertMacroExpansion(
             """
             @Multicast
             protocol BatSignal {
-                func foo() throws
+                func foo()
             }
+            let defaultSignals: [BatSignal] = []
             """,
             expandedSource: """
             protocol BatSignal {
-                func foo() throws
+                func foo()
             }
             public final class BatSignals: BatSignal {
                 private let signals: [BatSignal]
                 public init(@ArrayBuilder<BatSignal> _ signals: () -> [BatSignal]) {
                     self.signals = defaultSignals + signals()
                 }
+                func foo() {
+                    signals.forEach {
+                        $0.foo()
+                    }
+                }
             }
+            let defaultSignals: [BatSignal] = []
             """,
             macros: testMacros
        )
     }
     
 }
-// 1. Not a protocol
 
-// 2. There is a generic
-// 3. All function are unappropriate
+// Tests:
+// 1. Not a protocol
+// 2. There is an assocciated type
+// 3. There is a variable
+// 3. All functions that are unappropriate
 // 4. All types of parameter styles in functions (3)
-// 5. 
