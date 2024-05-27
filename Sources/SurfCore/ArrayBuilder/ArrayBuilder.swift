@@ -7,6 +7,26 @@
 
 import Foundation
 
+/// Всеядный билдер для декларативных конструкций.
+///
+/// Например,
+///```swift
+///SomeItems {
+///    Item1
+///    Item2
+///    if condition {
+///        Item3a
+///    } else {
+///        Item3b
+///    }
+///}
+///```
+/// где `SomeItems` - это короткая функция
+/// ```swift
+///public func SomeItems(@ArrayBuilder<ItemType>_ content: () -> [ItemType]) -> [ItemType] {
+///    content()
+///}
+///```
 @resultBuilder
 public enum ArrayBuilder<Item> {
 
@@ -36,6 +56,10 @@ public enum ArrayBuilder<Item> {
 
     public static func buildEither(second component: [Item]) -> [Item] {
         return component
+    }
+
+    public static func buildOptional(_ component: [Item]?) -> [Item] {
+        return component ?? []
     }
 
 }
