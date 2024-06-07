@@ -19,7 +19,7 @@ def create_modules_specs(macro_name, macro_type, macro_group)
     Specs.new(
       "Macros",
       "#{macro_name}.swift",
-      lambda { template("macros", { 'macro_name' => macro_name.downcase, 'macro_type' => macro_type }) }
+      lambda { template("macros", { 'macro_name' => macro_name, 'macro_type' => macro_type }) }
     ),
 
     # Implementation
@@ -49,7 +49,7 @@ def create_modules_specs(macro_name, macro_type, macro_group)
     Specs.new(
       "../../Tests/SurfMacros",
       "#{macro_name}Tests.swift",
-      lambda { template("test", { 'macro_name' => macro_name.downcase, 'macro_type' => macro_type }) }
+      lambda { template("test", { 'macro_name' => macro_name, 'macro_type' => macro_type }) }
     )
   ]
 end

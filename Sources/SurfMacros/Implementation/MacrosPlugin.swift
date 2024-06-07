@@ -6,6 +6,7 @@ import SwiftSyntaxMacros
 @main
 struct MacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
+        SignalsPlugin.providingMacros,
         InfrastructurePlugin.providingMacros,
         FactoryPlugin.providingMacros,
         RouterPlugin.providingMacros

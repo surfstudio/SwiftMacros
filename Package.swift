@@ -22,17 +22,12 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
+        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0")
     ],
     targets: [
 
         // MARK: - SurfMacros
 
-        .executableTarget(
-            name: "SurfMacrosClient",
-            dependencies: ["SurfMacros"],
-            path: "Sources/SurfMacros/Client"
-        ),
         .target(
             name: "SurfMacros",
             dependencies: ["SurfMacroBody"],
@@ -60,7 +55,7 @@ let package = Package(
             dependencies: [
                 "SurfMacroBody",
                 "SurfMacrosSupport",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
             ],
             path: "Tests/SurfMacros"
         ),
@@ -76,5 +71,16 @@ let package = Package(
             dependencies: ["SurfCore"],
             path: "Tests/SurfCore"
         ),
+
+        // MARK: - Debug
+
+        .executableTarget(
+            name: "SurfMacrosClient",
+            dependencies: [
+                "SurfMacros",
+                "SurfCore"
+            ],
+            path: "Sources/SurfMacros/Client"
+        )
     ]
 )
