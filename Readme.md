@@ -59,7 +59,7 @@ VSURF-Support/
 - `MacrosPlugin.swift` - файл-плагин, содержащий все макросы библиотеки; реализуется за счет использования плагинов групп.
 
 # Code Snippets
-По пути `/Sources/.codesnippets/` можно найти code snippet'ы, используемые в проекте. Для установки перенесите в `~/Library/Developer/Xcode/UserData/CodeSnippets/previews.codesnippet` файлы с необходимыми snippet'ами, после чего перезапустите Xcode.
+По пути `/Sources/.codesnippets/` можно найти code snippet'ы, используемые в проекте. Для установки перенесите в `~/Library/Developer/Xcode/UserData/CodeSnippets/` файлы с необходимыми snippet'ами, после чего перезапустите Xcode.
 ## Существующие snippets
 - **Previews**
 
