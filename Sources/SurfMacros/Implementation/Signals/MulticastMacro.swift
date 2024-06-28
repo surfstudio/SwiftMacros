@@ -12,8 +12,6 @@ public struct MulticastMacro: PeerMacro {
 
         static let variable = "signals"
         static let arrayBuilder = "ArrayBuilder"
-        static let defaultSignals = "defaultSignals"
-        static let plus = "+"
         static let dollarIdentifier = "$0"
         static let forEach = "forEach"
 
@@ -72,7 +70,7 @@ private extension MulticastMacro {
     }
 
 }
-    
+
 // MARK: - Private Methods
 
 private extension MulticastMacro {
@@ -80,8 +78,7 @@ private extension MulticastMacro {
     static func checkMembers(of decl: ProtocolDeclSyntax) throws {
         try decl.memberBlock.members.forEach { member in
             if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-               !isAppropriateFuncDecl(funcDecl)
-            {
+               !isAppropriateFuncDecl(funcDecl) {
                 throw MulticastError.wrongFunctionFormat
             } else if member.decl.is(VariableDeclSyntax.self) {
                 throw DeclarationError.unexpectedVariable
@@ -98,8 +95,7 @@ private extension MulticastMacro {
            decl.signature.effectSpecifiers == nil,
            decl.genericWhereClause == nil,
            decl.genericParameterClause == nil,
-           decl.attributes.isEmpty
-        {
+           decl.attributes.isEmpty {
             return true
         }
         return false
@@ -154,7 +150,6 @@ private extension MulticastMacro {
         let attributeName = IdentifierTypeSyntax(
             name: .identifier(Names.arrayBuilder),
             genericArgumentClause: .init(arguments: [.init(argument: attributeArgumentGenericType)])
-                
         )
         let returnTypeOfInputFunction = createArrayOfSignalsType()
         let inputFunctionType = FunctionTypeSyntax(
@@ -175,12 +170,8 @@ private extension MulticastMacro {
             base: DeclReferenceExprSyntax(baseName: .keyword(.`self`)),
             declName: .init(baseName: .identifier(Names.variable))
         )
-        let rightOperand = InfixOperatorExprSyntax(
-            leftOperand: DeclReferenceExprSyntax(baseName: .identifier(Names.defaultSignals)),
-            operator: BinaryOperatorExprSyntax(operator: .binaryOperator(Names.plus)),
-            rightOperand: FunctionCallExprSyntax(
-                calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
-            )
+        let rightOperand = FunctionCallExprSyntax(
+            calledExpression: DeclReferenceExprSyntax(baseName: .identifier(Names.variable))
         )
         let infixOperatorExpr = InfixOperatorExprSyntax(
             leftOperand: leftOperand,
@@ -209,7 +200,7 @@ private extension MulticastMacro {
         return signalsClassFuncDecl
     }
 
-    static func transformIntoCall(functionDecl: FunctionDeclSyntax)  -> FunctionCallExprSyntax {
+    static func transformIntoCall(functionDecl: FunctionDeclSyntax) -> FunctionCallExprSyntax {
         let calledExpression = MemberAccessExprSyntax(
             base: DeclReferenceExprSyntax(baseName: .dollarIdentifier(Names.dollarIdentifier)),
             declName: .init(baseName: functionDecl.name)

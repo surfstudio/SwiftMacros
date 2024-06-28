@@ -1,3 +1,5 @@
+// swiftlint:disable all
+
 import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import XCTest
@@ -326,7 +328,7 @@ final class MulticastMacroTests: XCTestCase {
             public final class BatSignals: BatSignal {
                 private let signals: [BatSignal]
                 public init(@ArrayBuilder<BatSignal> _ signals: () -> [BatSignal]) {
-                    self.signals = defaultSignals + signals()
+                    self.signals = signals()
                 }
                 public func call(robin: Robin) {
                     signals.forEach {
@@ -350,3 +352,4 @@ final class MulticastMacroTests: XCTestCase {
     }
     
 }
+// swiftlint:enable all
