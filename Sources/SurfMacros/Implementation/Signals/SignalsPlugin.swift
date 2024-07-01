@@ -5,6 +5,7 @@ import SwiftSyntaxMacros
 
 struct SignalsPlugin {
     static let providingMacros: [Macro.Type] = [
-        MulticastMacro.self
+        MulticastMacro.self,
+        CompletionHandlerMacro.self
     ]
 }

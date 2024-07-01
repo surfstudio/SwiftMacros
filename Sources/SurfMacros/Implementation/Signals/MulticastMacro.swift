@@ -33,21 +33,11 @@ public struct MulticastMacro: PeerMacro {
         guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
             throw DeclarationError.wrongAttaching(expected: .protocol)
         }
-        try checkProtocolDeclaration(protocolDecl)
+        try SignalsMacroGroupSupport.checkProtocolDeclaration(protocolDecl)
         Names.protocol = protocolDecl.name.text
         let protocolFuncDecls = protocolDecl.memberBlock.functionDecls
         let signalsClass = createSignalsClass(with: protocolFuncDecls)
         return [.init(signalsClass)]
-    }
-
-}
-
-// MARK: - Checks
-
-private extension MulticastMacro {
-
-    static func checkProtocolDeclaration(_ declaration: ProtocolDeclSyntax) throws {
-        try checkMembers(of: declaration)
     }
 
 }
@@ -74,36 +64,6 @@ private extension MulticastMacro {
 // MARK: - Private Methods
 
 private extension MulticastMacro {
-
-    static func checkMembers(of decl: ProtocolDeclSyntax) throws {
-        try decl.memberBlock.members.forEach { member in
-            if let funcDecl = member.decl.as(FunctionDeclSyntax.self),
-               !isAppropriateFuncDecl(funcDecl) {
-                throw MulticastError.wrongFunctionFormat
-            } else if member.decl.is(VariableDeclSyntax.self) {
-                throw DeclarationError.unexpectedVariable
-            } else if member.decl.is(AssociatedTypeDeclSyntax.self) {
-                throw DeclarationError.unexpectedAssociatedType
-            }
-        }
-    }
-
-    static func isAppropriateFuncDecl(_ decl: FunctionDeclSyntax) -> Bool {
-        if !decl.modifiers.contains(where: isStatic),
-           case .identifier = decl.name.tokenKind,
-           decl.signature.returnClause == nil,
-           decl.signature.effectSpecifiers == nil,
-           decl.genericWhereClause == nil,
-           decl.genericParameterClause == nil,
-           decl.attributes.isEmpty {
-            return true
-        }
-        return false
-    }
-
-    static func isStatic(_ modifier: DeclModifierSyntax) -> Bool {
-        modifier.name.tokenKind == .keyword(.static)
-    }
 
     static func createPublicModifier() -> DeclModifierSyntax {
         return .init(name: .keyword(.public))
@@ -182,6 +142,16 @@ private extension MulticastMacro {
     }
 
     static func transformIntoSignalsClassFuncDecl(_ funcDecl: FunctionDeclSyntax) -> FunctionDeclSyntax {
+        let publicModifier = createPublicModifier()
+        let body = createFuncBody(withCalling: funcDecl)
+        return SignalsMacroGroupSupport.createFuncDecl(
+            from: funcDecl,
+            with: body,
+            modifiers: [publicModifier]
+        )
+    }
+
+    static func createFuncBody(withCalling funcDecl: FunctionDeclSyntax) -> CodeBlockSyntax {
         let funcCall = transformIntoCall(functionDecl: funcDecl)
         let trailingClosure = ClosureExprSyntax(statements: [.init(item: .expr(.init(funcCall)))])
         let forEachCall = FunctionCallExprSyntax(
@@ -192,12 +162,7 @@ private extension MulticastMacro {
             trailingClosure: trailingClosure,
             argumentsBuilder: {}
         )
-        let publicModifier = createPublicModifier()
-
-        var signalsClassFuncDecl = funcDecl.trimmed
-        signalsClassFuncDecl.body = .init(statements: [.init(item: .expr(.init(forEachCall)))])
-        signalsClassFuncDecl.modifiers = [publicModifier]
-        return signalsClassFuncDecl
+        return .init(statements: [.init(item: .expr(.init(forEachCall)))])
     }
 
     static func transformIntoCall(functionDecl: FunctionDeclSyntax) -> FunctionCallExprSyntax {
