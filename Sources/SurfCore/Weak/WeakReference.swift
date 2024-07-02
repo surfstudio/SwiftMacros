@@ -12,7 +12,7 @@ public struct WeakReference<Input: AnyObject> {
         let input = WeakLocator.shared.provide(Input.self)?.unit
         #if DEBUG
         if input == nil {
-            fatalError("⚠️ Weak for \(Input.self) not found in WeakLocator")
+            debugPrint("⚠️ Weak for \(Input.self) not found in WeakLocator")
         }
         #endif
         return input
