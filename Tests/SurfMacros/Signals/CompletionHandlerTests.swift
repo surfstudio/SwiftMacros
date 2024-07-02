@@ -8,16 +8,33 @@ import XCTest
 import SurfMacroBody
 import SurfMacrosSupport
 
-private let macro = "CompletionHandler"
-private let type = CompletionHandlerMacro.self
-private let testMacros: [String: Macro.Type] = [macro: type]
+private let testMacro = "CompletionHandler"
+private let testType = CompletionHandlerMacro.self
+private let testMacros: [String: Macro.Type] = [testMacro: testType]
 #endif
 
 final class CompletionHandlerMacroTests: XCTestCase {
 
+    func testWhenAttachedTypeIsNotProtocol() {
+        let runner = AttachedTypeTests(macro: testMacro, type: testType)
+        runner.testWhenWrongAttachedType(
+            originalSource: {
+                """
+                @\(testMacro)
+                \($0) BatSignal {}
+                """
+            },
+            expandedSource: {
+                """
+                \($0) BatSignal {}
+                """
+            },
+            allowedDecls: [.protocol]
+        )
+    }
+
     func testAllWrongProtocolFormats() {
-        let runner = ProtocolableMacroTests(macro: macro, type: type)
-        runner.testWhenAttachedTypeIsNotProtocol()
+        let runner = ProtocolableMacroTests(macro: testMacro, type: testType)
         runner.testWhenFuncHasAttribute()
         runner.testWhenFuncIsAsync()
         runner.testWhenFuncIsGenericWithWhereKeyword()
@@ -32,7 +49,7 @@ final class CompletionHandlerMacroTests: XCTestCase {
     func testWithAllPossibleArgumentFormats() {
         assertMacroExpansion(
             """
-            @\(macro)
+            @\(testMacro)
             protocol BatSignal {
                 func call(robin: Robin)
                 func call(for robin: Robin)
@@ -46,18 +63,18 @@ final class CompletionHandlerMacroTests: XCTestCase {
                 func call(_ robin: Robin)
             }
 
-            private class BatSignalHandler: BatSignal {
+            public class BatSignalHandler: BatSignal {
                 private let completion: EmptyClosure?
-                init(completion: EmptyClosure? = nil) {
+                public init(completion: EmptyClosure? = nil) {
                     self.completion = completion
                 }
-                func call(robin: Robin) {
+                public func call(robin: Robin) {
                     completion?()
                 }
-                func call(for robin: Robin) {
+                public func call(for robin: Robin) {
                     completion?()
                 }
-                func call(_ robin: Robin) {
+                public func call(_ robin: Robin) {
                     completion?()
                 }
             }

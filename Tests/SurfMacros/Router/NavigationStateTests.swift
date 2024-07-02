@@ -70,7 +70,7 @@ final class NavigationStateMacroTests: XCTestCase {
             """
         }
         let diagnostic = DiagnosticSpec(
-            message: "Macro can be attached to struct only",
+            message: "Macro can be attached to [struct] only",
             line: 1,
             column: 1
         )

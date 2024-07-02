@@ -58,7 +58,7 @@ private extension  NavigationStateMacro {
 
     static func checkDeclarationType(declaration: some DeclGroupSyntax) throws {
         guard declaration.is(StructDeclSyntax.self) else {
-            throw DeclarationError.wrongAttaching(expected: .struct)
+            throw DeclarationError.wrongAttaching(expected: [.struct])
         }
     }
 

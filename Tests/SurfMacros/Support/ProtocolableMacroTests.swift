@@ -10,45 +10,9 @@ import SwiftSyntaxMacrosTestSupport
 import SurfMacrosSupport
 import XCTest
 
-final class ProtocolableMacroTests {
-
-    private let macro: String
-    private let type: Macro.Type
-
-    init(macro: String, type: Macro.Type) {
-        self.macro = macro
-        self.type = type
-    }
+final class ProtocolableMacroTests: SupporingTestsBase {
 
     // MARK: - Tests
-
-    func testWhenAttachedTypeIsNotProtocol(file: StaticString = #file, line: UInt = #line) {
-        let originalSource: (String) -> String = {
-            """
-            @\(self.macro)
-            \($0) BatSignal {}
-            """
-        }
-        let expandedSource: (String) -> String = {
-            """
-            \($0) BatSignal {}
-            """
-        }
-        let diagnosticMessage =  "Macro can be attached to protocol only"
-        let wrongDecls: [Decls] = [.class, .enum, .struct]
-
-        wrongDecls
-            .map { $0.rawValue }
-            .forEach {
-                launchTest(
-                    originalSource($0),
-                    expandedSource: expandedSource($0),
-                    diagnosticMessage: diagnosticMessage,
-                    file: file,
-                    line: line
-                )
-            }
-    }
 
     func testWhenThereIsAssociated(file: StaticString = #file, line: UInt = #line) {
         let originalSource = """
@@ -332,35 +296,6 @@ final class ProtocolableMacroTests {
             file: file,
             line: line
         )
-    }
-
-}
-
-// MARK: - Private Methods
-
-private extension ProtocolableMacroTests {
-
-    func launchTest(
-        _ originalSource: String,
-        expandedSource: String,
-        diagnosticMessage: String,
-        file: StaticString,
-        line: UInt
-    ) {
-        assertMacroExpansion(
-            originalSource,
-            expandedSource: expandedSource,
-            diagnostics: [
-                .init(
-                    message: diagnosticMessage,
-                    line: 1,
-                    column: 1
-                )
-            ],
-            macros: [macro: type],
-            file: file,
-            line: line
-       )
     }
 
 }
