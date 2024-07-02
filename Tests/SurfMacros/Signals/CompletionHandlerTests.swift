@@ -8,12 +8,12 @@ import XCTest
 import SurfMacroBody
 import SurfMacrosSupport
 
-private let macro = "Multicast"
-private let type = MulticastMacro.self
+private let macro = "CompletionHandler"
+private let type = CompletionHandlerMacro.self
 private let testMacros: [String: Macro.Type] = [macro: type]
 #endif
 
-final class MulticastMacroTests: XCTestCase {
+final class CompletionHandlerMacroTests: XCTestCase {
 
     func testAllWrongProtocolFormats() {
         let runner = ProtocolableMacroTests(macro: macro, type: type)
@@ -32,7 +32,7 @@ final class MulticastMacroTests: XCTestCase {
     func testWithAllPossibleArgumentFormats() {
         assertMacroExpansion(
             """
-            @Multicast
+            @\(macro)
             protocol BatSignal {
                 func call(robin: Robin)
                 func call(for robin: Robin)
@@ -46,25 +46,19 @@ final class MulticastMacroTests: XCTestCase {
                 func call(_ robin: Robin)
             }
 
-            public final class BatSignals: BatSignal {
-                private let signals: [BatSignal]
-                public init(@ArrayBuilder<BatSignal> _ signals: () -> [BatSignal]) {
-                    self.signals = signals()
+            private class BatSignalHandler: BatSignal {
+                private let completion: EmptyClosure?
+                init(completion: EmptyClosure? = nil) {
+                    self.completion = completion
                 }
-                public func call(robin: Robin) {
-                    signals.forEach {
-                        $0.call(robin: robin)
-                    }
+                func call(robin: Robin) {
+                    completion?()
                 }
-                public func call(for robin: Robin) {
-                    signals.forEach {
-                        $0.call(for: robin)
-                    }
+                func call(for robin: Robin) {
+                    completion?()
                 }
-                public func call(_ robin: Robin) {
-                    signals.forEach {
-                        $0.call(robin)
-                    }
+                func call(_ robin: Robin) {
+                    completion?()
                 }
             }
             """,
