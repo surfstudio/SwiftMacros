@@ -2,11 +2,12 @@ import Foundation
 import SwiftSyntax
 
 public enum DeclarationError: Error, CustomStringConvertible {
-    case wrongAttaching(expected: Decls)
+    case wrongAttaching(expected: [Decls])
     case missedModifier(decl: Decls, declName: String, expected: Modifiers)
     case missedInheritance(decl: Decls, declName: String, expected: String)
     case unexpectedAssociatedType
     case unexpectedVariable
+    case unexpectedParameterClause
 
     public var description: String {
         switch self {
@@ -20,6 +21,8 @@ public enum DeclarationError: Error, CustomStringConvertible {
             return "There should not be any associated types"
         case .unexpectedVariable:
             return "There should not be any variables"
+        case .unexpectedParameterClause:
+            return "There should not be any parameter clause"
         }
     }
 }

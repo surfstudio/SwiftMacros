@@ -8,16 +8,33 @@ import XCTest
 import SurfMacroBody
 import SurfMacrosSupport
 
-private let macro = "Multicast"
-private let type = MulticastMacro.self
-private let testMacros: [String: Macro.Type] = [macro: type]
+private let testMacro = "Multicast"
+private let testType = MulticastMacro.self
+private let testMacros: [String: Macro.Type] = [testMacro: testType]
 #endif
 
 final class MulticastMacroTests: XCTestCase {
 
+    func testWhenAttachedTypeIsNotProtocol() {
+        let runner = AttachedTypeTests(macro: testMacro, type: testType)
+        runner.testWhenWrongAttachedType(
+            originalSource: {
+                """
+                @\(testMacro)
+                \($0) BatSignal {}
+                """
+            },
+            expandedSource: {
+                """
+                \($0) BatSignal {}
+                """
+            },
+            allowedDecls: [.protocol]
+        )
+    }
+
     func testAllWrongProtocolFormats() {
-        let runner = ProtocolableMacroTests(macro: macro, type: type)
-        runner.testWhenAttachedTypeIsNotProtocol()
+        let runner = ProtocolableMacroTests(macro: testMacro, type: testType)
         runner.testWhenFuncHasAttribute()
         runner.testWhenFuncIsAsync()
         runner.testWhenFuncIsGenericWithWhereKeyword()

@@ -31,7 +31,7 @@ public struct MulticastMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
-            throw DeclarationError.wrongAttaching(expected: .protocol)
+            throw DeclarationError.wrongAttaching(expected: [.protocol])
         }
         try SignalsMacroGroupSupport.checkProtocolDeclaration(protocolDecl)
         Names.protocol = protocolDecl.name.text

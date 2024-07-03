@@ -28,7 +28,7 @@ public struct CompletionHandlerMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let protocolDecl = declaration.as(ProtocolDeclSyntax.self) else {
-            throw DeclarationError.wrongAttaching(expected: .protocol)
+            throw DeclarationError.wrongAttaching(expected: [.protocol])
         }
         Names.protocol = protocolDecl.name.text
         try SignalsMacroGroupSupport.checkProtocolDeclaration(protocolDecl)
@@ -44,11 +44,11 @@ public struct CompletionHandlerMacro: PeerMacro {
 private extension CompletionHandlerMacro {
 
     static func createHandlerClass(with protocolFuncDecls: [FunctionDeclSyntax]) -> ClassDeclSyntax {
-        let privateModifier = DeclModifierSyntax(name: .keyword(.private))
+        let publicModifier = DeclModifierSyntax(name: .keyword(.public))
         let protocolIdentifier = createProtocolIdentifier()
         let memberBlock = createMemberBlock(with: protocolFuncDecls)
         return .init(
-            modifiers: [privateModifier],
+            modifiers: [publicModifier],
             name: .identifier(Names.class),
             inheritanceClause: .init(inheritedTypes: [.init(type: protocolIdentifier)]),
             memberBlock: memberBlock
@@ -66,7 +66,8 @@ private extension CompletionHandlerMacro {
             for funcDecl in protocolFuncDecls {
                 SignalsMacroGroupSupport.createFuncDecl(
                     from: funcDecl,
-                    with: createFuncBody()
+                    with: createFuncBody(),
+                    modifiers: [.init(name: .keyword(.public))]
                 )
             }
         }
@@ -88,9 +89,10 @@ private extension CompletionHandlerMacro {
     }
 
     static func createInit() -> InitializerDeclSyntax {
+        let publicModifier = DeclModifierSyntax(name: .keyword(.public))
         let signature = createInitSignature()
         let body = createInitBody()
-        return .init(signature: signature, body: body)
+        return .init(modifiers: [publicModifier], signature: signature, body: body)
     }
 
     static func createInitSignature() -> FunctionSignatureSyntax {
